@@ -22,6 +22,7 @@ import { UserResponse } from "./interceptors/user-response.interceptor";
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  // router -> /
   @Post()
   @UseInterceptors(UserResponse)
   async register(@Body() createUserDto: CreateUserDto) {
@@ -29,6 +30,7 @@ export class UserController {
     return user;
   }
 
+  // router -> /sign-in
   @Post("sign-in")
   @UseInterceptors(UserResponse)
   async signIn(@Body() signInUserDto: SignInUserDto) {
@@ -36,6 +38,7 @@ export class UserController {
     return user;
   }
 
+  // router -> /verify
   @Post("verify")
   @UseInterceptors(UserResponse)
   async verify(@Body() verifyUserDto: VerifyUserDto) {

@@ -79,16 +79,28 @@ export class UserService {
   }
 
   async verifyUser(token: string) {
-    const payload = await this.jwtService.verifyAsync<Payload>(token, {
-      secret: configuration.jwt.secret,
-    });
+    // verifying token and throwing error if token invalid
+    const payload = await this.jwtService
+      .verifyAsync<Payload>(token, {
+        secret: configuration.jwt.secret,
+      })
+      .catch(() => {
+        throw new UnauthorizedException([
+          new ErrorMessage(
+            "general",
+            "Your token has expired you need to login again."
+          ),
+        ]);
+      });
+
+    // finding user and throwing error if not found
     const verifiedUser = await this.userModel.findById(payload._id);
     if (!verifiedUser) {
       throw new NotFoundException([
         new ErrorMessage("general", "User not found."),
       ]);
     }
-    return verifiedUser;
+    return { ...verifiedUser, token };
   }
 
   findAll() {

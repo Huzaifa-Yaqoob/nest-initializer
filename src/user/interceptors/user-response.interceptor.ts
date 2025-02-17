@@ -29,13 +29,17 @@ export class UserResponse implements NestInterceptor {
     );
   }
 
-  private async transform(document: UserDocument) {
+  private async transform(document: UserDocument & { token?: string }) {
     const plainObject = document.toObject();
     const payload: Payload = {
       _id: plainObject._id.toString(),
       email: plainObject.email,
     };
-    const token = await this.jwtService.signAsync(payload);
+
+    let token = document.token;
+    if (!token) {
+      token = await this.jwtService.signAsync(payload);
+    }
     return instanceToPlain(
       plainToInstance(ResponseUserDto, { ...plainObject, token })
     );
