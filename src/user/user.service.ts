@@ -6,13 +6,12 @@ import {
   UnauthorizedException,
   NotFoundException,
 } from "@nestjs/common";
-import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { User } from "./schemas/user.schema";
-import { SignInUserDto } from "./dto/sign-in-user.dto";
 import { JwtService } from "@nestjs/jwt";
 import { ErrorMessage } from "src/helpers/ErrorMessage";
-import configuration from "src/configuration";
+import configuration from "src/config/general.config";
+import { RegisterCredentialsDto, SignInCredentialsDto } from "src/auth/dto";
 
 // useful types
 interface Payload {
@@ -27,7 +26,7 @@ export class UserService {
     private jwtService: JwtService
   ) {}
 
-  async createUser(createUserDto: CreateUserDto) {
+  async create(createUserDto: RegisterCredentialsDto) {
     try {
       // creating user & saving in db
       const createdUser = new this.userModel(createUserDto);
@@ -49,7 +48,7 @@ export class UserService {
     }
   }
 
-  async signIn(signInUserDto: SignInUserDto) {
+  async signIn(signInUserDto: SignInCredentialsDto) {
     const signInUser = await this.userModel.findOne({
       email: signInUserDto.email,
     });
@@ -80,18 +79,9 @@ export class UserService {
 
   async verifyUser(token: string) {
     // verifying token and throwing error if token invalid
-    const payload = await this.jwtService
-      .verifyAsync<Payload>(token, {
-        secret: configuration.jwt.secret,
-      })
-      .catch(() => {
-        throw new UnauthorizedException([
-          new ErrorMessage(
-            "general",
-            "Your token has expired you need to login again."
-          ),
-        ]);
-      });
+    const payload = await this.jwtService.verifyAsync<Payload>(token, {
+      secret: configuration.jwt.secret,
+    });
 
     // finding user and throwing error if not found
     const verifiedUser = await this.userModel.findById(payload._id);

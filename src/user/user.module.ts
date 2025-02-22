@@ -5,8 +5,8 @@ import { UserService } from "./user.service";
 import { User } from "./schemas/user.schema";
 import { UserController } from "./user.controller";
 import schemaMiddleware from "./middleware/user-schema.middleware";
-import configuration from "src/configuration";
-import { UserResponse } from "./interceptors/user-response.interceptor";
+import configuration from "src/config/general.config";
+import { UserResponse } from "../auth/interceptors/user-response.interceptor";
 
 @Module({
   imports: [

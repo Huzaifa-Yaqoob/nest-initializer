@@ -4,11 +4,11 @@ import {
   Injectable,
   NestInterceptor,
 } from "@nestjs/common";
-import { map, Observable } from "rxjs";
-import { UserDocument } from "../schemas/user.schema";
-import { JwtService } from "@nestjs/jwt";
-import { ResponseUserDto } from "../dto/response-user.dto";
 import { plainToInstance, instanceToPlain } from "class-transformer";
+import { map, Observable } from "rxjs";
+import { UserDocument } from "../../user/schemas/user.schema";
+import { JwtService } from "@nestjs/jwt";
+import { ResponseUserDto } from "../../user/dto/response-user.dto";
 
 interface Payload {
   _id: string;

@@ -6,7 +6,7 @@ import {
   IsNotEmpty,
 } from "class-validator";
 
-export class CreateUserDto {
+export class RegisterCredentialsDto {
   @MaxLength(50)
   @MinLength(3)
   @IsString()
