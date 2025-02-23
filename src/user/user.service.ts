@@ -3,15 +3,19 @@ import { InjectModel } from "@nestjs/mongoose";
 import {
   Injectable,
   ConflictException,
-  UnauthorizedException,
+  BadRequestException,
   NotFoundException,
+  UsePipes,
+  ValidationPipe,
 } from "@nestjs/common";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { User } from "./schemas/user.schema";
 import { JwtService } from "@nestjs/jwt";
 import { ErrorMessage } from "src/helpers/ErrorMessage";
 import configuration from "src/config/general.config";
-import { RegisterCredentialsDto, SignInCredentialsDto } from "src/auth/dto";
+import { RegisterDto } from "src/auth/dto";
+import { validateOrReject } from "class-validator";
+import { plainToInstance } from "class-transformer";
 
 // useful types
 interface Payload {
@@ -26,17 +30,15 @@ export class UserService {
     private jwtService: JwtService
   ) {}
 
-  async create(createUserDto: RegisterCredentialsDto) {
+  @UsePipes(new ValidationPipe())
+  async create(registerUserDto: RegisterDto) {
+    const registerDto = plainToInstance(RegisterDto, registerUserDto);
     try {
+      await validateOrReject(registerDto);
       // creating user & saving in db
-      const createdUser = new this.userModel(createUserDto);
-      const payload: Payload = {
-        _id: createdUser._id.toString(),
-        email: createdUser.email,
-      };
-      const token = await this.jwtService.signAsync(payload);
-
-      return createdUser;
+      const { account, ...others } = registerUserDto;
+      const createdUser = new this.userModel({ ...others, email: account });
+      return await createdUser.save();
     } catch (error) {
       // throwing error if user already exists
       if (error.code === 11000 && error.keyValue) {
@@ -44,37 +46,8 @@ export class UserService {
           new ErrorMessage("email", "User with this email already exist."),
         ]);
       }
-      throw error;
+      throw new BadRequestException(error);
     }
-  }
-
-  async signIn(signInUserDto: SignInCredentialsDto) {
-    const signInUser = await this.userModel.findOne({
-      email: signInUserDto.email,
-    });
-
-    // checking email
-    if (!signInUser) {
-      throw new UnauthorizedException([
-        new ErrorMessage("email", "This email is not registered."),
-      ]);
-    }
-
-    // comparing password
-    if (!(await signInUser.comparePassword(signInUserDto.password))) {
-      throw new UnauthorizedException([
-        new ErrorMessage("password", "Please enter a correct password."),
-      ]);
-    }
-
-    // generating token
-    const payload: Payload = {
-      _id: signInUser._id.toString(),
-      email: signInUser.email,
-    };
-    const token = await this.jwtService.signAsync(payload);
-
-    return signInUser;
   }
 
   async verifyUser(token: string) {
@@ -97,8 +70,9 @@ export class UserService {
     return `This action returns all user`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(email: string) {
+    console.log(email);
+    return await this.userModel.findOne({ email });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

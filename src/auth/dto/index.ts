@@ -1,3 +1,3 @@
-export { RegisterCredentialsDto } from "./register-credentials.dto";
-export { SignInCredentialsDto } from "./sign-in.dto";
+export { RegisterDto } from "./register.dto";
+export { SigninDto } from "./signin.dto";
 export { VerifyTokenDto } from "./verify-token.dto";

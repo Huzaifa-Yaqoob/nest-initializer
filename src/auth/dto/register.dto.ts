@@ -6,7 +6,7 @@ import {
   IsNotEmpty,
 } from "class-validator";
 
-export class RegisterCredentialsDto {
+export class RegisterDto {
   @MaxLength(50)
   @MinLength(3)
   @IsString()
@@ -15,7 +15,7 @@ export class RegisterCredentialsDto {
 
   @IsEmail()
   @IsNotEmpty()
-  email: string;
+  account: string;
 
   @MaxLength(32)
   @MinLength(8)
