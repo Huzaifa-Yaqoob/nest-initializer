@@ -1,9 +1,11 @@
-import { Injectable, Req } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { RegisterDto } from "./dto";
 import { User } from "src/user/schemas/user.schema";
 import { JwtService } from "@nestjs/jwt";
-import { Request } from "express";
+import { Response } from "express";
+import generalConfig from "src/config/general.config";
+import { Payload } from "./types";
 
 @Injectable()
 export class AuthService {
@@ -20,13 +22,28 @@ export class AuthService {
     return null;
   }
 
-  async login(user: User, @Req() req: Request) {
-    const payload = { id: user._id, email: user.email };
-    return { accessToken: this.jwtService.sign(payload) };
+  async login(user: User, res: Response) {
+    const payload: Payload = { id: user._id.toString(), email: user.email };
+    const accessToken = this.jwtService.sign(payload);
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: generalConfig.environment === "production",
+      maxAge: generalConfig.jwt.timeLimitInMSec,
+    });
+    res.send();
   }
 
-  async register(registerDto: RegisterDto, @Req() req: Request) {
+  async register(registerDto: RegisterDto, res: Response) {
     const user = await this.userService.create(registerDto);
-    return await this.login(user, req);
+    return await this.login(user, res);
+  }
+
+  async logout(res: Response) {
+    res.clearCookie("access_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      expires: new Date(0),
+    });
   }
 }
