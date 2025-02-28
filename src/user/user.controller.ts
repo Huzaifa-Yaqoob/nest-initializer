@@ -1,39 +1,26 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
   ClassSerializerInterceptor,
   UseInterceptors,
+  UseGuards,
+  Post,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { User, UserPayload } from "src/decorators/user.decorator";
+import { AuthGuard } from "@nestjs/passport";
 
 @Controller("user")
 @UseInterceptors(ClassSerializerInterceptor)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  // router -> /user GET & POST
+  @UseGuards(AuthGuard("jwt"))
   @Get()
-  findAll() {
-    return this.userService.findAll();
-  }
-
-  @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.userService.findOne(id);
-  }
-
-  @Patch(":id")
-  update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
-
-  @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.userService.remove(+id);
+  @Post("user")
+  async getProfile(@User() user: UserPayload) {
+    return await this.userService.getProfile(user.id);
   }
 }

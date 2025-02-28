@@ -4,7 +4,7 @@ import { Injectable } from "@nestjs/common";
 import generalConfig from "src/config/general.config";
 import { Request } from "express";
 import { UnauthorizedException, NotFoundException } from "@nestjs/common";
-import { Payload } from "../types";
+import { UserPayload } from "src/decorators/user.decorator";
 import { UserService } from "src/user/user.service";
 import { ErrorMessage } from "src/helpers/ErrorMessage";
 
@@ -25,8 +25,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: Payload) {
-    if (!(await this.userService.findOne(payload.email))) {
+  async validate(payload: UserPayload) {
+    if (!(await this.userService.findOneByAccount(payload.email))) {
       throw new NotFoundException(
         new ErrorMessage("general", "User is not found with that email.")
       );

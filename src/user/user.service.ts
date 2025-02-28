@@ -4,20 +4,11 @@ import {
   Injectable,
   ConflictException,
   BadRequestException,
-  NotFoundException,
-  UsePipes,
-  ValidationPipe,
 } from "@nestjs/common";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { User } from "./schemas/user.schema";
 import { ErrorMessage } from "src/helpers/ErrorMessage";
 import { RegisterDto } from "src/auth/dto";
-
-// useful types
-interface Payload {
-  email: string;
-  _id: string;
-}
 
 @Injectable()
 export class UserService {
@@ -40,11 +31,11 @@ export class UserService {
     }
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async getProfile(id: string) {
+    return await this.userModel.findById(id);
   }
 
-  async findOne(email: string) {
+  async findOneByAccount(email: string) {
     return await this.userModel.findOne({ email });
   }
 

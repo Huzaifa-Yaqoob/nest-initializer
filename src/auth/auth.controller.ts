@@ -3,7 +3,6 @@ import {
   Post,
   Body,
   UseInterceptors,
-  InternalServerErrorException,
   ClassSerializerInterceptor,
   UseGuards,
   Req,
@@ -12,9 +11,8 @@ import {
 import { RegisterDto } from "./dto";
 import { AuthService } from "./auth.service";
 import { AuthGuard } from "@nestjs/passport";
-import { CustomRequest } from "./strategies/local.strategy";
 import { Response } from "express";
-import { ErrorMessage } from "src/helpers/ErrorMessage";
+import { User, UserPayload } from "src/decorators/user.decorator";
 
 @Controller("auth")
 @UseInterceptors(ClassSerializerInterceptor)
@@ -23,22 +21,27 @@ export class AuthController {
 
   // router -> /auth
   @Post()
-  async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
+  async register(
+    @Body() registerDto: RegisterDto,
+    @Res({ passthrough: true }) res: Response
+  ) {
     return await this.authService.register(registerDto, res);
   }
 
   // router -> /auth/login
   @UseGuards(AuthGuard("local"))
   @Post("login")
-  async login(@Req() req: CustomRequest, @Res() res: Response) {
-    return await this.authService.login(req.user, res);
+  async login(
+    @User() user: UserPayload,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    return await this.authService.login(user, res);
   }
 
   // router -> /auth/logout
-  @UseGuards(AuthGuard("local"))
+  @UseGuards(AuthGuard("jwt"))
   @Post("logout")
-  async logout(@Res() res: Response) {
-    this.authService.logout(res);
-    res.send();
+  async logout(@Res({ passthrough: true }) res: Response) {
+    await this.authService.logout(res);
   }
 }

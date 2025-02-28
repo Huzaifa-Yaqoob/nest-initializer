@@ -7,16 +7,16 @@ import configuration from "./config/general.config";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // app.useGlobalPipes(
-  //   new ValidationPipe({
-  //     whitelist: true,
-  //     forbidNonWhitelisted: true,
-  //     transform: true,
-  //     exceptionFactory: formatError,
-  //   })
-  // );
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      exceptionFactory: formatError,
+    })
+  );
 
-  // app.use(cookieParser());
+  app.use(cookieParser());
 
   await app.listen(configuration.port);
 }
