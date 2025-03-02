@@ -25,5 +25,5 @@ export default {
         ? parseInt(process.env.JWT_TIME_LIMIT_REFRESH_TOKEN)
         : 86400),
   },
-  environment: process.env.NODE_ENV ?? "production",
+  development: true,
 };

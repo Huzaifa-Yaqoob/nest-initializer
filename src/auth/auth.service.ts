@@ -44,11 +44,14 @@ export class AuthService {
   }
 
   saveAccessToken(userPayload: UserPayload, res: Response) {
-    const accessToken = this.jwtService.sign(userPayload);
+    const accessToken = this.jwtService.sign(userPayload, {
+      secret: generalConfig.jwt.secretAT,
+      expiresIn: generalConfig.jwt.timeLimitAT,
+    });
     res.cookie("access_token", accessToken, {
       httpOnly: true,
       sameSite: "none",
-      secure: generalConfig.environment === "production",
+      secure: !generalConfig.development,
       maxAge: generalConfig.jwt.timeLimitInMSecAT,
     });
   }
@@ -61,26 +64,35 @@ export class AuthService {
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
       sameSite: "none",
-      secure: generalConfig.environment === "production",
-      maxAge: generalConfig.jwt.timeLimitInMSecAT,
+      secure: !generalConfig.development,
+      maxAge: generalConfig.jwt.timeLimitInMSecRT,
     });
   }
 
   async validateRefreshToken(req: Request, res: Response) {
     const refreshToken = req?.cookies?.refresh_token;
-    console.log(req?.cookies, "as");
+
     if (!refreshToken) {
       throw new UnauthorizedException(
         new ErrorMessage("general", "You don`t have refresh token.")
       );
     }
-    const payload = this.jwtService.decode<UserPayload>(refreshToken);
+
+    const payload = this.jwtService.verify<
+      UserPayload & { iat: number; exp: number }
+    >(refreshToken, {
+      secret: generalConfig.jwt.secretRT,
+    });
+
     if (!(await this.userService.findOneById(payload.id))) {
       throw new NotFoundException(
         new ErrorMessage("general", "Unable to find your account.")
       );
     }
-    this.saveAccessToken(payload, res);
+
+    const { iat, exp, ...userPayload } = payload;
+
+    this.saveAccessToken(userPayload, res);
   }
 
   async register(registerDto: RegisterDto, res: Response) {
@@ -95,13 +107,13 @@ export class AuthService {
   async logout(res: Response) {
     res.clearCookie("access_token", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: !generalConfig.development,
       sameSite: "none",
       expires: new Date(0),
     });
     res.clearCookie("refresh_token", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: !generalConfig.development,
       sameSite: "none",
       expires: new Date(0),
     });
