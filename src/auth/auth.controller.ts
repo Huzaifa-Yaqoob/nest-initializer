@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
   UseInterceptors,
   ClassSerializerInterceptor,
@@ -19,7 +20,7 @@ import { User, UserPayload } from "src/decorators/user.decorator";
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // router -> /auth
+  // router -> /auth POST
   @Post()
   async register(
     @Body() registerDto: RegisterDto,
@@ -28,7 +29,8 @@ export class AuthController {
     return await this.authService.register(registerDto, res);
   }
 
-  @Post("refresh")
+  // router -> /auth GET
+  @Get()
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response
@@ -36,7 +38,7 @@ export class AuthController {
     await this.authService.validateRefreshToken(req, res);
   }
 
-  // router -> /auth/login
+  // router -> /auth/login POST
   @UseGuards(AuthGuard("local"))
   @Post("login")
   async login(
@@ -46,9 +48,9 @@ export class AuthController {
     return await this.authService.login(user, res);
   }
 
-  // router -> /auth/logout
+  // router -> /auth/logout GET
   @UseGuards(AuthGuard("jwt"))
-  @Post("logout")
+  @Get("logout")
   async logout(@Res({ passthrough: true }) res: Response) {
     await this.authService.logout(res);
   }

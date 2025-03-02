@@ -73,9 +73,7 @@ export class AuthService {
     const refreshToken = req?.cookies?.refresh_token;
 
     if (!refreshToken) {
-      throw new UnauthorizedException(
-        new ErrorMessage("general", "You don`t have refresh token.")
-      );
+      throw new UnauthorizedException();
     }
 
     const payload = this.jwtService.verify<
@@ -85,9 +83,7 @@ export class AuthService {
     });
 
     if (!(await this.userService.findOneById(payload.id))) {
-      throw new NotFoundException(
-        new ErrorMessage("general", "Unable to find your account.")
-      );
+      throw new UnauthorizedException();
     }
 
     const { iat, exp, ...userPayload } = payload;
