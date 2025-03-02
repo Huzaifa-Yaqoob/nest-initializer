@@ -4,10 +4,10 @@ import {
   ClassSerializerInterceptor,
   UseInterceptors,
   UseGuards,
-  Post,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { UserResponse } from "./interceptors/user-response.interceptor";
 import { User, UserPayload } from "src/decorators/user.decorator";
 import { AuthGuard } from "@nestjs/passport";
 
@@ -19,6 +19,7 @@ export class UserController {
   // router -> /user GET
   @UseGuards(AuthGuard("jwt"))
   @Get()
+  @UseInterceptors(UserResponse)
   async getProfile(@User() user: UserPayload) {
     return await this.userService.getProfile(user.id);
   }
