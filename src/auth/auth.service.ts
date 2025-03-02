@@ -2,11 +2,12 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  UnauthorizedException,
 } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { RegisterDto } from "./dto";
 import { JwtService } from "@nestjs/jwt";
-import { Response } from "express";
+import { Response, Request } from "express";
 import generalConfig from "src/config/general.config";
 import { ErrorMessage } from "src/helpers/ErrorMessage";
 import { UserPayload } from "src/decorators/user.decorator";
@@ -37,14 +38,49 @@ export class AuthService {
   }
 
   async login(userPayload: UserPayload, res: Response) {
+    this.saveAccessToken(userPayload, res);
+    this.saveRefreshToken(userPayload, res);
+    return { message: "Login Success" };
+  }
+
+  saveAccessToken(userPayload: UserPayload, res: Response) {
     const accessToken = this.jwtService.sign(userPayload);
     res.cookie("access_token", accessToken, {
       httpOnly: true,
+      sameSite: "none",
       secure: generalConfig.environment === "production",
-      maxAge: generalConfig.jwt.timeLimitInMSec,
+      maxAge: generalConfig.jwt.timeLimitInMSecAT,
     });
-    res.redirect(307, "/user");
-    return;
+  }
+
+  saveRefreshToken(userPayload: UserPayload, res: Response) {
+    const refreshToken = this.jwtService.sign(userPayload, {
+      secret: generalConfig.jwt.secretRT,
+      expiresIn: generalConfig.jwt.timeLimitRT,
+    });
+    res.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: generalConfig.environment === "production",
+      maxAge: generalConfig.jwt.timeLimitInMSecAT,
+    });
+  }
+
+  async validateRefreshToken(req: Request, res: Response) {
+    const refreshToken = req?.cookies?.refresh_token;
+    console.log(req?.cookies, "as");
+    if (!refreshToken) {
+      throw new UnauthorizedException(
+        new ErrorMessage("general", "You don`t have refresh token.")
+      );
+    }
+    const payload = this.jwtService.decode<UserPayload>(refreshToken);
+    if (!(await this.userService.findOneById(payload.id))) {
+      throw new NotFoundException(
+        new ErrorMessage("general", "Unable to find your account.")
+      );
+    }
+    this.saveAccessToken(payload, res);
   }
 
   async register(registerDto: RegisterDto, res: Response) {
@@ -58,6 +94,12 @@ export class AuthService {
 
   async logout(res: Response) {
     res.clearCookie("access_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      expires: new Date(0),
+    });
+    res.clearCookie("refresh_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "none",

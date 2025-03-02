@@ -7,6 +7,8 @@ import configuration from "./config/general.config";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use(cookieParser());
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -15,8 +17,6 @@ async function bootstrap() {
       exceptionFactory: formatError,
     })
   );
-
-  app.use(cookieParser());
 
   await app.listen(configuration.port);
 }

@@ -11,8 +11,8 @@ import generalConfig from "src/config/general.config";
     UserModule,
     JwtModule.register({
       global: true,
-      secret: generalConfig.jwt.secret,
-      signOptions: { expiresIn: generalConfig.jwt.timeLimit },
+      secret: generalConfig.jwt.secretAT,
+      signOptions: { expiresIn: generalConfig.jwt.timeLimitAT },
     }),
   ],
   controllers: [AuthController],

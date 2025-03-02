@@ -35,6 +35,10 @@ export class UserService {
     return await this.userModel.findById(id);
   }
 
+  async findOneById(id: string) {
+    return await this.userModel.findById(id);
+  }
+
   async findOneByAccount(email: string) {
     return await this.userModel.findOne({ email });
   }

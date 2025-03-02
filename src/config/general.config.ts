@@ -4,14 +4,25 @@ export default {
     uri: process.env.MONGO_URI ?? "",
   },
   jwt: {
-    secret: process.env.JWT_SECRET ?? "my-secret",
-    timeLimit: process.env.JWT_TIME_LIMIT
-      ? process.env.JWT_TIME_LIMIT + "s"
+    secretAT:
+      process.env.JWT_SECRET_ACCESS_TOKEN ?? "my-secret-for-access-token",
+    secretRT:
+      process.env.JWT_SECRET_REFRESH_TOKEN ?? "my-secret-for-refresh-token",
+    timeLimitAT: process.env.JWT_TIME_LIMIT_ACCESS_TOKEN
+      ? process.env.JWT_TIME_LIMIT_ACCESS_TOKEN + "s"
       : "86400s",
-    timeLimitInMSec:
+    timeLimitInMSecAT:
       1000 *
-      (process.env.JWT_TIME_LIMIT
-        ? parseInt(process.env.JWT_TIME_LIMIT)
+      (process.env.JWT_TIME_LIMIT_ACCESS_TOKEN
+        ? parseInt(process.env.JWT_TIME_LIMIT_ACCESS_TOKEN)
+        : 86400),
+    timeLimitRT: process.env.JWT_TIME_LIMIT_REFRESH_TOKEN
+      ? process.env.JWT_TIME_LIMIT_REFRESH_TOKEN + "s"
+      : "86400s",
+    timeLimitInMSecRT:
+      1000 *
+      (process.env.JWT_TIME_LIMIT_REFRESH_TOKEN
+        ? parseInt(process.env.JWT_TIME_LIMIT_REFRESH_TOKEN)
         : 86400),
   },
   environment: process.env.NODE_ENV ?? "production",

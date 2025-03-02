@@ -16,10 +16,9 @@ import { AuthGuard } from "@nestjs/passport";
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  // router -> /user GET & POST
+  // router -> /user GET
   @UseGuards(AuthGuard("jwt"))
   @Get()
-  @Post("user")
   async getProfile(@User() user: UserPayload) {
     return await this.userService.getProfile(user.id);
   }

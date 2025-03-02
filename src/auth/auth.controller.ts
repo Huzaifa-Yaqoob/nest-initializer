@@ -11,7 +11,7 @@ import {
 import { RegisterDto } from "./dto";
 import { AuthService } from "./auth.service";
 import { AuthGuard } from "@nestjs/passport";
-import { Response } from "express";
+import { Response, Request } from "express";
 import { User, UserPayload } from "src/decorators/user.decorator";
 
 @Controller("auth")
@@ -26,6 +26,14 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response
   ) {
     return await this.authService.register(registerDto, res);
+  }
+
+  @Post("refresh")
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    await this.authService.validateRefreshToken(req, res);
   }
 
   // router -> /auth/login

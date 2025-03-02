@@ -21,12 +21,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         return req.cookies.access_token;
       },
       ignoreExpiration: false,
-      secretOrKey: generalConfig.jwt.secret,
+      secretOrKey: generalConfig.jwt.secretAT,
     });
   }
 
   async validate(payload: UserPayload) {
-    if (!(await this.userService.findOneByAccount(payload.email))) {
+    if (!(await this.userService.findOneById(payload.id))) {
       throw new NotFoundException(
         new ErrorMessage("general", "User is not found with that email.")
       );
