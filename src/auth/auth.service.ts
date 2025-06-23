@@ -27,7 +27,7 @@ export class AuthService {
     return user || null;
   }
 
-  login(userPayload: UserPayload, response: any) {
+  login(userPayload: UserPayload, response: FastifyReply) {
     this.saveAccessToken(userPayload, response);
     this.saveRefreshToken(userPayload, response);
     return { message: 'login successful' };
@@ -59,7 +59,19 @@ export class AuthService {
     });
   }
 
-  logout(id: number) {
-    return `This action removes a #${id} auth`;
+  logout(response: FastifyReply) {
+    response.clearCookie('access_token', {
+      httpOnly: true,
+      secure: this.configService.get<boolean>('isProduction'),
+      sameSite: 'none',
+      expires: new Date(0),
+    });
+    response.clearCookie('refresh_token', {
+      httpOnly: true,
+      secure: this.configService.get<boolean>('isProduction'),
+      sameSite: 'none',
+      expires: new Date(0),
+    });
+    return { message: 'logout successful' };
   }
 }

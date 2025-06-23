@@ -31,6 +31,9 @@ export class AuthController {
   }
 
   // auth/logout/ GET
+  @UseGuards(AuthGuard('jwt'))
   @Get('logout')
-  update(@Req() request: FastifyRequest, @Res() response: FastifyReply) {}
+  logout(@Res({ passthrough: true }) response: FastifyReply) {
+    this.authService.logout(response);
+  }
 }
