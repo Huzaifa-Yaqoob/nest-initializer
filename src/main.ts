@@ -12,11 +12,17 @@ import {
   DuplicateKeyExceptionFilter,
 } from './filters';
 
+const methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
+const origin = [process.env.ORIGIN ?? 'http://localhost:3000'];
+const allowedHeaders = ['Content-Type'];
+
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({ logger: true }),
   );
+
+  app.enableCors({ origin, methods, allowedHeaders, credentials: true });
 
   await app.register(fastifyCookie, {
     secret: process.env.COOKIE_SECRET ?? 'default-secret-712%^%^',
