@@ -1,7 +1,11 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Res, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto';
 import { LoginUserDto } from './dto';
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { User, UserPayload } from '../decorators';
 
 @Controller('auth')
 export class AuthController {
@@ -9,15 +13,24 @@ export class AuthController {
 
   // auth/register/ POST
   @Post('register')
-  async create(@Body() createUseDto: CreateUserDto) {
-    return await this.authService.register(createUseDto);
+  async create(
+    @Body() createUseDto: CreateUserDto,
+    @Res({ passthrough: true }) response: FastifyReply,
+  ) {
+    return await this.authService.register(createUseDto, response);
   }
 
   // auth/login/ POST
+  @UseGuards(AuthGuard('local'))
   @Post('login')
-  findAll(@Body() loginUserDto: LoginUserDto) {}
+  login(
+    @User() userPayload: UserPayload,
+    @Res({ passthrough: true }) response: FastifyReply,
+  ) {
+    return this.authService.login(userPayload, response);
+  }
 
   // auth/logout/ GET
   @Get('logout')
-  update() {}
+  update(@Req() request: FastifyRequest, @Res() response: FastifyReply) {}
 }

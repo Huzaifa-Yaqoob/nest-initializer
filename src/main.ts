@@ -18,6 +18,11 @@ async function bootstrap() {
     new FastifyAdapter({ logger: true }),
   );
 
+  await app.register(fastifyCookie, {
+    secret: process.env.COOKIE_SECRET ?? 'default-secret-712%^%^',
+    parseOptions: {},
+  });
+
   app.useGlobalFilters(
     new AllMongooseExceptionFilter(),
     new DuplicateKeyExceptionFilter(),
@@ -45,8 +50,6 @@ async function bootstrap() {
       },
     }),
   );
-
-  await app.register(fastifyCookie);
 
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 }
