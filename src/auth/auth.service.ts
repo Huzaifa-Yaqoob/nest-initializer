@@ -2,7 +2,7 @@ import { Injectable, Req } from '@nestjs/common';
 import { CreateUserDto } from '../user/dto';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { FastifyReply } from 'fastify';
+import { FastifyReply, FastifyRequest } from 'fastify';
 import { ConfigService } from '@nestjs/config';
 import { UserPayload } from '../decorators';
 import { Types } from 'mongoose';
@@ -14,12 +14,18 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
-  async register(createUserDto: CreateUserDto, response: FastifyReply) {
+  async register(
+    createUserDto: CreateUserDto,
+    response: FastifyReply,
+    request: FastifyRequest,
+  ) {
     const newUser = await this.userService.create(createUserDto);
     const userPayload: UserPayload = {
       id: (newUser._id as Types.ObjectId).toString(),
     };
-    return this.login(userPayload, response);
+    const ab = this.login(userPayload, response);
+    console.log(request.cookies, 'asSADSAsa');
+    return ab;
   }
 
   async validateUser(email: string, password: string) {
@@ -28,9 +34,9 @@ export class AuthService {
   }
 
   login(userPayload: UserPayload, response: FastifyReply) {
-    this.saveAccessToken(userPayload, response);
+    const accessToken = this.saveAccessToken(userPayload, response);
     this.saveRefreshToken(userPayload, response);
-    return { message: 'login successful' };
+    return { message: 'login successful', accessToken };
   }
 
   saveAccessToken(userPayload: UserPayload, response: FastifyReply) {
@@ -38,11 +44,12 @@ export class AuthService {
 
     response.setCookie('access_token', accessToken, {
       httpOnly: true,
-      secure: this.configService.get<boolean>('isProduction'),
+      secure: !this.configService.get<boolean>('isProduction'),
       path: '/',
       maxAge: this.configService.get<number>('accessCookieExpiresIn'),
-      sameSite: 'lax',
+      sameSite: 'none',
     });
+    return accessToken;
   }
 
   saveRefreshToken(userPayload: UserPayload, response: FastifyReply) {
@@ -52,11 +59,12 @@ export class AuthService {
 
     response.setCookie('refresh_token', refreshToken, {
       httpOnly: true,
-      secure: this.configService.get<boolean>('isProduction'),
+      secure: !this.configService.get<boolean>('isProduction'),
       path: '/',
       maxAge: this.configService.get<number>('refreshCookieExpiresIn'),
-      sameSite: 'lax',
+      sameSite: 'none',
     });
+    return refreshToken;
   }
 
   logout(response: FastifyReply) {

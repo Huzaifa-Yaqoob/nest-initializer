@@ -22,11 +22,13 @@ async function bootstrap() {
     new FastifyAdapter({ logger: true }),
   );
 
-  app.enableCors({ origin, methods, allowedHeaders, credentials: true });
+  await app.register(fastifyCookie);
 
-  await app.register(fastifyCookie, {
-    secret: process.env.COOKIE_SECRET ?? 'default-secret-712%^%^',
-    parseOptions: {},
+  app.enableCors({
+    origin,
+    methods,
+    allowedHeaders,
+    credentials: true,
   });
 
   app.useGlobalFilters(

@@ -1,9 +1,15 @@
-import { Controller, Get, Post, Body, Res, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Res,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto';
-import { LoginUserDto } from './dto';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { User, UserPayload } from '../decorators';
 
@@ -16,8 +22,10 @@ export class AuthController {
   async create(
     @Body() createUseDto: CreateUserDto,
     @Res({ passthrough: true }) response: FastifyReply,
+    @Req() request: FastifyRequest,
   ) {
-    return await this.authService.register(createUseDto, response);
+    console.log(request.cookies, 'asSADSA');
+    return await this.authService.register(createUseDto, response, request);
   }
 
   // auth/login/ POST

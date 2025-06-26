@@ -16,7 +16,7 @@ export class DuplicateKeyExceptionFilter implements ExceptionFilter {
     if (exception.code === 11000) {
       const formattedErrors = {};
       const key = Object.keys(exception.keyValue || {})[0];
-      formattedErrors[key] = [`${key} already exists`];
+      formattedErrors[key] = [`${key} already exists.`];
 
       return response.status(400).send({
         statusCode: 400,
