@@ -1,4 +1,6 @@
 import { NestFactory } from '@nestjs/core';
+import * as fs from 'fs';
+import { join } from 'path';
 import { ValidationPipe, BadRequestException } from '@nestjs/common';
 import {
   FastifyAdapter,
@@ -17,6 +19,11 @@ const origin = [process.env.ORIGIN ?? 'http://localhost:3000'];
 const allowedHeaders = ['Content-Type'];
 
 async function bootstrap() {
+  // const httpsOptions = {
+  //   key: fs.readFileSync(join(__dirname, '..', 'localhost+2-key.pem')),
+  //   cert: fs.readFileSync(join(__dirname, '..', 'localhost+2.pem')),
+  // };
+
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({ logger: true }),

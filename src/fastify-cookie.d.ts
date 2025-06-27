@@ -36,5 +36,10 @@ declare module 'fastify' {
     sameSite?: boolean | 'lax' | 'strict' | 'none';
     secure?: boolean;
     signed?: boolean;
+    /**
+     * Adds the Partitioned attribute to the cookie.
+     * Note: Only works in Chromium-based browsers (experimental).
+     */
+    partitioned?: boolean;
   }
 }

@@ -44,10 +44,11 @@ export class AuthService {
 
     response.setCookie('access_token', accessToken, {
       httpOnly: true,
-      secure: !this.configService.get<boolean>('isProduction'),
+      secure: true,
       path: '/',
       maxAge: this.configService.get<number>('accessCookieExpiresIn'),
       sameSite: 'none',
+      partitioned: true,
     });
     return accessToken;
   }
@@ -59,10 +60,11 @@ export class AuthService {
 
     response.setCookie('refresh_token', refreshToken, {
       httpOnly: true,
-      secure: !this.configService.get<boolean>('isProduction'),
+      secure: true,
       path: '/',
       maxAge: this.configService.get<number>('refreshCookieExpiresIn'),
       sameSite: 'none',
+      partitioned: true,
     });
     return refreshToken;
   }
@@ -73,12 +75,14 @@ export class AuthService {
       secure: this.configService.get<boolean>('isProduction'),
       sameSite: 'none',
       expires: new Date(0),
+      partitioned: false,
     });
     response.clearCookie('refresh_token', {
       httpOnly: true,
       secure: this.configService.get<boolean>('isProduction'),
       sameSite: 'none',
       expires: new Date(0),
+      partitioned: false,
     });
     return { message: 'logout successful' };
   }
