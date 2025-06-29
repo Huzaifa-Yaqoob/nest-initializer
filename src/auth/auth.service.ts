@@ -23,9 +23,7 @@ export class AuthService {
     const userPayload: UserPayload = {
       id: (newUser._id as Types.ObjectId).toString(),
     };
-    const ab = this.login(userPayload, response);
-    console.log(request.cookies, 'asSADSAsa');
-    return ab;
+    return await this.login(userPayload, response);
   }
 
   async validateUser(email: string, password: string) {
@@ -33,10 +31,10 @@ export class AuthService {
     return user || null;
   }
 
-  login(userPayload: UserPayload, response: FastifyReply) {
+  async login(userPayload: UserPayload, response: FastifyReply) {
     const accessToken = this.saveAccessToken(userPayload, response);
     this.saveRefreshToken(userPayload, response);
-    return { message: 'login successful', accessToken };
+    return await this.userService.findOneById(userPayload.id);
   }
 
   saveAccessToken(userPayload: UserPayload, response: FastifyReply) {
