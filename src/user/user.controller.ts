@@ -10,6 +10,6 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Get()
   async getProfile(@User() userPayload: UserPayload) {
-    return await this.userService.findOneById(userPayload?.id);
+    return await this.userService.findOneById(userPayload?._id);
   }
 }

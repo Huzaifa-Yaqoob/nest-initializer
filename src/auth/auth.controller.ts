@@ -1,16 +1,15 @@
 import {
+  Body,
   Controller,
   Get,
   Post,
-  Body,
   Res,
-  Req,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto';
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { FastifyReply } from 'fastify';
 import { AuthGuard } from '@nestjs/passport';
 import { User, UserPayload } from '../decorators';
 import { SingleUserDataInterceptor } from '../transformers/single-user-data.transformer';
@@ -25,9 +24,8 @@ export class AuthController {
   async create(
     @Body() createUseDto: CreateUserDto,
     @Res({ passthrough: true }) response: FastifyReply,
-    @Req() request: FastifyRequest,
   ) {
-    return await this.authService.register(createUseDto, response, request);
+    return await this.authService.register(createUseDto, response);
   }
 
   // auth/login/ POST
@@ -39,6 +37,17 @@ export class AuthController {
     @Res({ passthrough: true }) response: FastifyReply,
   ) {
     return await this.authService.login(userPayload, response);
+  }
+
+  // auth/refresh/ GET
+  @UseGuards(AuthGuard('jwt-refresh'))
+  @UseInterceptors(SingleUserDataInterceptor)
+  @Post('refresh')
+  async refreshToken(
+    @User() userPayload: UserPayload,
+    @Res({ passthrough: true }) response: FastifyReply,
+  ) {
+    return await this.authService.refreshAToken(userPayload, response);
   }
 
   // auth/logout/ GET

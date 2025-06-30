@@ -1,4 +1,4 @@
-import { Prop, SchemaFactory, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 
@@ -27,9 +27,9 @@ UserSchema.pre<UserDocument>('save', async function (next) {
   next();
 });
 
-// Add method to compare password
+// Add a method to compare password
 UserSchema.methods.comparePassword = async function (
   enteredPassword: string,
 ): Promise<boolean> {
-  return bcrypt.compare(enteredPassword, this.password);
+  return bcrypt.compare(enteredPassword, this?.password);
 };

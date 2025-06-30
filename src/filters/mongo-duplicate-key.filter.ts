@@ -1,9 +1,4 @@
-import {
-  ArgumentsHost,
-  Catch,
-  ConflictException,
-  ExceptionFilter,
-} from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
 import { MongoServerError } from 'mongodb';
 import { FastifyReply } from 'fastify';
 
@@ -15,7 +10,7 @@ export class DuplicateKeyExceptionFilter implements ExceptionFilter {
 
     if (exception.code === 11000) {
       const formattedErrors = {};
-      const key = Object.keys(exception.keyValue || {})[0];
+      const key = Object.keys(exception?.keyValue ?? {})[0];
       formattedErrors[key] = [`${key} already exists.`];
 
       return response.status(400).send({

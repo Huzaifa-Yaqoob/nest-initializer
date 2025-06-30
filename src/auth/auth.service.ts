@@ -1,8 +1,8 @@
-import { Injectable, Req } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from '../user/dto';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { FastifyReply } from 'fastify';
 import { ConfigService } from '@nestjs/config';
 import { UserPayload } from '../decorators';
 import { Types } from 'mongoose';
@@ -14,14 +14,10 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
-  async register(
-    createUserDto: CreateUserDto,
-    response: FastifyReply,
-    request: FastifyRequest,
-  ) {
+  async register(createUserDto: CreateUserDto, response: FastifyReply) {
     const newUser = await this.userService.create(createUserDto);
     const userPayload: UserPayload = {
-      id: (newUser._id as Types.ObjectId).toString(),
+      _id: (newUser._id as Types.ObjectId).toString(),
     };
     return await this.login(userPayload, response);
   }
@@ -32,9 +28,20 @@ export class AuthService {
   }
 
   async login(userPayload: UserPayload, response: FastifyReply) {
-    const accessToken = this.saveAccessToken(userPayload, response);
+    this.saveAccessToken(userPayload, response);
     this.saveRefreshToken(userPayload, response);
-    return await this.userService.findOneById(userPayload.id);
+    return await this.userService.findOneById(userPayload._id);
+  }
+
+  async refreshAToken(userPayload: UserPayload, response: FastifyReply) {
+    const user = await this.userService.findOneById(userPayload._id);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    this.saveAccessToken(userPayload, response);
+
+    return user;
   }
 
   saveAccessToken(userPayload: UserPayload, response: FastifyReply) {
@@ -54,6 +61,7 @@ export class AuthService {
   saveRefreshToken(userPayload: UserPayload, response: FastifyReply) {
     const refreshToken = this.jwtService.sign(userPayload, {
       expiresIn: this.configService.get<string>('refreshJwtExpiresIn'),
+      secret: this.configService.get<string>('jwtRefreshSecret'),
     });
 
     response.setCookie('refresh_token', refreshToken, {

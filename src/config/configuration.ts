@@ -7,6 +7,7 @@ export default () => ({
   mongoUri: process.env.MONGO_URI,
 
   jwtSecret: process.env.JWT_SECRET,
+  jwtRefreshSecret: process.env.JWT_REFRESH_SECRET,
   accessJwtExpiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || '3h',
   refreshJwtExpiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || '1w',
 

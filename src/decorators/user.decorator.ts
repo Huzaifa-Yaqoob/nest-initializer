@@ -1,9 +1,16 @@
+import { FastifyReply } from 'fastify';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+
+export type UserPayload = { _id: string };
+export interface ExtendedFastifyReply extends FastifyReply {
+  user: UserPayload;
+}
+
 export const User = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest();
+  (_: unknown, ctx: ExecutionContext) => {
+    const request: ExtendedFastifyReply = ctx
+      .switchToHttp()
+      .getRequest<ExtendedFastifyReply>();
     return request.user;
   },
 );
-
-export type UserPayload = { id: string };

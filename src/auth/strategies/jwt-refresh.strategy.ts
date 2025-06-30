@@ -7,28 +7,33 @@ import { UserPayload } from 'src/decorators/user.decorator';
 import { UserService } from 'src/user/user.service';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtRefreshStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-refresh',
+) {
   constructor(
     private readonly userService: UserService,
     private readonly configService: ConfigService,
   ) {
-    const jwtSecret = configService.get<string>('jwtSecret') || '';
+    const jwtRefreshSecret =
+      configService.get<string>('jwtRefreshSecret') || '';
     super({
       jwtFromRequest: (req: FastifyRequest) => {
-        if (!req?.cookies?.access_token) {
-          throw new UnauthorizedException();
+        if (!req?.cookies?.refresh_token) {
+          throw new UnauthorizedException('Missing refresh token');
         }
-        return req.cookies.access_token;
+        return req.cookies.refresh_token;
       },
       ignoreExpiration: false,
-      secretOrKey: jwtSecret,
+      secretOrKey: jwtRefreshSecret,
     });
   }
 
   async validate(payload: UserPayload) {
-    if (!(await this.userService.findOneById(payload._id))) {
-      throw new UnauthorizedException();
+    const user = await this.userService.findOneById(payload._id);
+    if (!user) {
+      throw new UnauthorizedException('Refresh token is invalid or expired');
     }
-    return payload;
+    return { _id: payload._id };
   }
 }
